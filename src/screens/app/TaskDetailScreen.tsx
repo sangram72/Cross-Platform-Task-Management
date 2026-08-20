@@ -22,7 +22,7 @@ import { lightTheme, darkTheme } from '../../theme/colors';
 import { AppStackParamList } from '../../navigation/types';
 
 export default function TaskDetailScreen() {
-    console.log('TaskDetailScreen rendered');
+   
   const navigation = useNavigation();
   const route = useRoute<RouteProp<AppStackParamList, 'TaskDetail'>>();
   const existingTask = route.params?.task;
