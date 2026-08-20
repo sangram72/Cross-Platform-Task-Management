@@ -1,31 +1,30 @@
+Offline Task Manager
 
-# Offline Task Manager
-
-A simple, snappy task manager built with React Native. It works completely offline, saves your tasks instantly to a local SQLite database, and syncs everything with Firebase Firestore whenever you're connected to the internet.
+A simple, snappy task manager built with React Native. It works completely offline, saves tasks locally to an SQLite database, and syncs automatically with Firebase Firestore whenever you have an active internet connection.
 
 ---
 
 ## 💡 How It Works (Architecture)
 
-The goal here was simple: **make the app feel instant and never make the user wait on network calls.**
+The main goal was to **make the app feel instant and never make the user wait on network requests.**
 
-Instead of talking directly to an API every time you tap a button, the app follows a local-first pattern:
+Instead of querying a remote API for every action, the app uses an offline-first workflow:
 
-1. **Local SQLite is the Source of Truth:** Whenever you create, edit, or delete a task, it writes directly to the local SQLite database and updates Redux right away. The UI updates instantly with zero loading spinners for basic actions.
-2. **Background Sync Engine:** A dedicated sync helper runs in the background. It watches your internet connection:
-   - **Going Online:** It looks for any local changes marked as pending and pushes them up to Firestore.
-   - **Realtime Listener:** It listens for changes from Firestore (like edits from another device) and quietly updates your local database.
-3. **Clean Teardown on Logout:** When you log out, it cleanly shuts down active Firestore listeners, cancels pending local reminders, deletes the push token, and clears the local state so the next account starts fresh.
+1. **Local SQLite is the Source of Truth:** Whenever you create, update, toggle, or delete a task, it writes immediately to the local SQLite database and updates the Redux store. The UI updates instantly with zero loading spinners.
+2. **Background Sync Engine:** A dedicated sync helper runs in the background to monitor network connectivity:
+   - **Going Online:** Detects network restoration, collects all pending changes (`created`, `updated`, `deleted`), and batches them up to Firestore.
+   - **Realtime Sync:** Uses a Firestore `onSnapshot` listener to pull remote changes (such as edits made on another device) and quietly updates SQLite.
+3. **Clean Teardown on Logout:** Signing out unsubscribes active Firestore listeners, cancels pending local reminders, deletes the push token, and clears the local Redux state clean.
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Framework:** React Native (`0.87x`)
+- **Framework:** React Native
 - **State Management:** Redux Toolkit & React-Redux
-- **Local Storage:** `@op-engineering/op-sqlite` (chosen for speed and direct SQLite access)
+- **Local Database:** `@op-engineering/op-sqlite`
 - **Backend & Auth:** Firebase (Authentication, Cloud Firestore, Cloud Messaging)
-- **Local Reminders:** `@notifee/react-native` (handles scheduled notifications and Android channels)
+- **Local Notifications:** `@notifee/react-native`
 - **Network Monitoring:** `@react-native-community/netinfo`
 - **Environment Management:** `react-native-config`
 
@@ -33,14 +32,12 @@ Instead of talking directly to an API every time you tap a button, the app follo
 
 ## 📁 Project Structure
 
-Here is a quick look at where everything lives:
-
 ```text
 src/
-├── components/          # Reusable UI elements (buttons, inputs, task cards)
+├── components/          # Reusable UI elements (CustomButton, CustomInput, TaskItem)
 ├── config/              # Environment config wrapper (env.ts)
 ├── database/            # SQLite setup & the background sync engine
-├── navigation/          # React Navigation stacks (Auth & Main App)
+├── navigation/          # React Navigation stacks (AuthStack & AppStack)
 ├── screens/
 │   ├── app/             # TaskList and TaskDetail screens
 │   └── auth/            # Login and Sign-up screens
@@ -48,4 +45,3 @@ src/
 ├── store/               # Redux slices (tasks, auth, theme, ui)
 ├── theme/               # Light and dark color palettes
 └── types/               # TypeScript interfaces
->>>>>>> 23bc2d95d8bcb059807645d0e43b9576fcce283c
